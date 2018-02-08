@@ -93,6 +93,52 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   Complete this function! Make sure you switch between lidar and radar
   measurements.
   */
+  if (!is_initialized_) {
+    if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+      // Extract values for better readibility
+      double rho = meas_package.raw_measurements_[0]; // range
+      double phi = meas_package.raw_measurements_[1]; // bearing
+      double rho_dot = meas_package.raw_measurements_[2]; // velocity of rh
+      // Convert from polar to cartesian coordinates
+      double px = rho * cos(phi);
+      double py = rho * sin(phi);
+      double vx = rho_dot * cos(phi);
+      double vy = rho_dot * sin(phi);
+      double v  = sqrt(vx * vx + vy * vy);
+      // Initialize state
+      x_ << px, py, v, 0, 0;
+    }
+    else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+      // Extract values for better readibility
+      double px = meas_package.raw_measurements_[0];
+      double py = meas_package.raw_measurements_[1];
+      // Initialize state
+      x_ << px, py, 0, 0, 0;
+    }
+
+    // Saving first timestamp in seconds
+    time_us_ = meas_package.timestamp_;
+
+    // Initializing done
+    is_initialized_ = true;
+    // No need to predict or update
+    return;
+  }
+
+  // Calculate dt
+  double dt = (meas_package.timestamp_ - time_us_) / 1000000.0; // in seconds
+  time_us_ = meas_package.timestamp_;
+
+  // Prediction step
+  Prediction(dt);
+
+  // Update step
+  if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
+    UpdateRadar(meas_package);
+  }
+  else if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
+    UpdateLidar(meas_package);
+  }
 }
 
 /**
