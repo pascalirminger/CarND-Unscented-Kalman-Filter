@@ -12,17 +12,25 @@ using std::vector;
  * This is scaffolding, do not modify
  */
 UKF::UKF() {
-  // if this is false, laser measurements will be ignored (except during init)
+  // If this is false, laser measurements will be ignored (except during init)
   use_laser_ = true;
 
-  // if this is false, radar measurements will be ignored (except during init)
+  // If this is false, radar measurements will be ignored (except during init)
   use_radar_ = true;
 
-  // initial state vector
-  x_ = VectorXd(5);
+  // State vector dimension
+  n_x_ = 5;
 
-  // initial covariance matrix
-  P_ = MatrixXd(5, 5);
+  // Initial state vector
+  x_ = VectorXd(n_x_);
+
+  // Initial covariance matrix
+  P_ = MatrixXd(n_x_, n_x_);
+  P_ << 1, 0, 0, 0, 0,
+        0, 1, 0, 0, 0,
+        0, 0, 1, 0, 0,
+        0, 0, 0, 1, 0,
+        0, 0, 0, 0, 1;
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
   std_a_ = 30;
@@ -46,14 +54,30 @@ UKF::UKF() {
   // Radar measurement noise standard deviation radius change in m/s
   std_radrd_ = 0.3;
   //DO NOT MODIFY measurement noise values above these are provided by the sensor manufacturer.
+
+  // Augmented state dimension
+  n_aug_ = n_x_ + 2;
   
-  /**
-  TODO:
+  // Sigma point spreading parameter
+  lambda_ = 3 - n_x_;
 
-  Complete the initialization. See ukf.h for other member properties.
+  // Number of sigma points
+  n_sig_ = 2 * n_aug_ + 1;
 
-  Hint: one or more values initialized above might be wildly off...
-  */
+  // Initialize weights
+  weights_ = VectorXd(n_sig_);
+  weights_.fill(0.5 / (n_aug_ + lambda_));
+  weights_(0) = lambda_ / (lambda_ + n_aug_);
+
+  // Initialize measurement noice covarieance matrices
+  R_radar_ = MatrixXd(3, 3);
+  R_radar_ << std_radr_ * std_radr_, 0, 0,
+              0, std_radphi_ * std_radphi_, 0,
+              0, 0, std_radrd_ * std_radrd_;
+
+  R_lidar_ = MatrixXd(2, 2);
+  R_lidar_ << std_laspx_ * std_laspx_, 0,
+              0, std_laspy_ * std_laspy_;
 }
 
 UKF::~UKF() {}

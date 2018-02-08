@@ -67,6 +67,21 @@ public:
   ///* Sigma point spreading parameter
   double lambda_;
 
+  ///* Sigma points dimension
+  int n_sig_;
+
+  ///* Radar measurement noise covariance matrix
+  MatrixXd R_radar_;
+
+  ///* Lidar measurement noise covariance matrix
+  MatrixXd R_lidar_;
+
+  ///* The current NIS for radar
+  double NIS_radar_;
+
+  ///* The current NIS for laser
+  double NIS_laser_;
+
 
   /**
    * Constructor
