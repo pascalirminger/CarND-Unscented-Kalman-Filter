@@ -64,9 +64,12 @@ UKF::UKF() {
   // Number of sigma points
   n_sig_ = 2 * n_aug_ + 1;
 
+  // Create matrix with predicted sigma points as columns
+  Xsig_pred_ = MatrixXd(n_x_, n_sig_);
+
   // Initialize weights
   weights_ = VectorXd(n_sig_);
-  weights_.fill(0.5 / (n_aug_ + lambda_));
+  weights_.fill(0.5 / (lambda_ + n_aug_));
   weights_(0) = lambda_ / (lambda_ + n_aug_);
 
   // Initialize measurement noice covarieance matrices
@@ -89,7 +92,6 @@ UKF::~UKF() {}
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   /**
   TODO:
-
   Complete this function! Make sure you switch between lidar and radar
   measurements.
   */
@@ -105,14 +107,14 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       double vx = rho_dot * cos(phi);
       double vy = rho_dot * sin(phi);
       double v  = sqrt(vx * vx + vy * vy);
-      // Initialize state
+      // Initialize state vector
       x_ << px, py, v, 0, 0;
     }
     else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
       // Extract values for better readibility
       double px = meas_package.raw_measurements_[0];
       double py = meas_package.raw_measurements_[1];
-      // Initialize state
+      // Initialize state vector
       x_ << px, py, 0, 0, 0;
     }
 
