@@ -117,6 +117,15 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+private:
+  /**
+   * Normalized the component `index` of the vector `vector` to be inside
+   * [-M_PI, M_PI] interval.
+   * @param vector The vector
+   * @param index The index of the vector
+   */
+  void NormalizeAngleOnComponent(VectorXd vector, int index);
 };
 
 #endif /* UKF_H */
